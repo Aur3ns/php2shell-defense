@@ -1,0 +1,19 @@
+title: Web Worker Executes Program from Temporary Directory
+id: 754bb859-dc94-47ee-a509-82b86e8a9832
+status: experimental
+description: Execution from temporary directory by a web worker.
+author: PHP2Shell Defense contributors
+date: 2026-10-22
+tags: [attack.execution, attack.t1059]
+logsource:
+  category: process_creation
+  product: linux
+detection:
+  parent:
+    ParentImage|endswith: [/php-fpm, /php-fpm8.2, /php-fpm8.3, /php-fpm8.4, /php-fpm8.5, /apache2, /httpd]
+  path:
+    Image|startswith: [/tmp/, /var/tmp/, /dev/shm/]
+  condition: parent and path
+falsepositives:
+  - Legitimate temporary application workers
+level: high
