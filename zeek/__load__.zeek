@@ -7,10 +7,8 @@ export {
     redef enum Notice::Type += { Upload_Progress_Field };
 }
 
+# Minimal safe starting point: no body capture and no alerts emitted.
 event http_header(c: connection, is_orig: bool, name: string, value: string)
     {
     if ( ! is_orig ) return;
-    if ( to_lower(name) == "content-type" &&
-         /multipart\/form-data/ in to_lower(value) )
-        c$http?$method;
     }
