@@ -10,3 +10,7 @@ jobs:
           python-version: "3.12"
       - run: pip install pyyaml
       - run: python scripts/validate.py
+      - name: Correlation unit tests
+        run: python -m unittest discover -s tests -p 'test_*.py' -v
+      - name: Correlation example
+        run: python tools/correlate.py tests/correlation_example.jsonl
