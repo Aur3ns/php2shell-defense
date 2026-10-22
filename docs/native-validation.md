@@ -7,3 +7,11 @@ CI includes an opt-in isolated `Suricata native validation` workflow that instal
 No network scans, exploits, production traffic, or automatic blocking are performed.
 
 Future work: version-pinned container tests, generated benign PCAPs, native engine regression assertions, and Wazuh/Falco/Zeek verification.
+
+## Falco
+
+The `Falco native validation` workflow uses the official `falcosecurity/falco:0.45.0` container to execute `falco --validate` against the custom Falco rule file. This is a static/native rule parser check with **no host sensor, driver, or live workload**. The actual engine result must be checked in GitHub Actions. It is not an execution or false-positive test.
+
+## HTTP fixtures
+
+See [synthetic HTTP corpus](http-corpus.md). Those header-only test records are not packets or replayable HTTP messages; no native network test is claimed.
