@@ -17,3 +17,11 @@ jobs:
 
       - name: Synthetic measurement report
         run: python tools/evaluate.py --labels tests/evaluation/labels.json --alerts tests/evaluation/alerts.json
+
+      - name: End-to-end offline pipeline
+        run: python -m tools.pipeline --events tests/pipeline/events.jsonl --labels tests/pipeline/labels.json --output pipeline-report.json
+      - name: Upload evidence report
+        uses: actions/upload-artifact@v4
+        with:
+          name: synthetic-pipeline-report
+          path: pipeline-report.json
