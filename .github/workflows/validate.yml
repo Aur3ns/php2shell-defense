@@ -14,3 +14,6 @@ jobs:
         run: python -m unittest discover -s tests -p 'test_*.py' -v
       - name: Correlation example
         run: python tools/correlate.py tests/correlation_example.jsonl
+
+      - name: Synthetic measurement report
+        run: python tools/evaluate.py --labels tests/evaluation/labels.json --alerts tests/evaluation/alerts.json
