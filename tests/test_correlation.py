@@ -21,6 +21,25 @@ class TestCorrelation(unittest.TestCase):
         rows=[event("web-1","2026-10-22T10:00:00Z","http_anomaly"),
               event("web-1","2026-10-22T10:20:00Z","web_child_process")]
         self.assertEqual(correlate(rows),[])
+    def test_unsorted_input(self):
+        rows = [event("web-1", "2026-10-22T10:00:30Z", "web_child_process"),
+                event("web-1", "2026-10-22T10:00:00Z", "http_anomaly")]
+        self.assertEqual(len(correlate(rows)), 1)
+
+    def test_boundary_inclusive(self):
+        rows = [event("web-1", "2026-10-22T10:00:00Z", "http_anomaly"),
+                event("web-1", "2026-10-22T10:02:00Z", "web_child_process")]
+        self.assertEqual(len(correlate(rows)), 1)
+
+    def test_repeated_signal_no_correlated_alert(self):
+        rows = [event("web-1", "2026-10-22T10:00:00Z", "web_child_process"),
+                event("web-1", "2026-10-22T10:00:02Z", "web_child_process")]
+        self.assertEqual(correlate(rows), [])
+
+    def test_invalid_window(self):
+        with self.assertRaises(ValueError):
+            correlate([], 0)
+
     def test_reject_naive_timestamp(self):
         with self.assertRaises(ValueError):
             correlate([event("web-1","2026-10-22T10:00:00","http_anomaly")])
