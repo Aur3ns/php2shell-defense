@@ -26,16 +26,20 @@ def inspect_request(method, path, content_type, body, max_bytes=2_000_000):
     segments=body.split(marker)
     if len(segments)<3 or segments[0] not in (b"",b"\r\n"):
         return {"confidence":"unknown","reason":"incomplete_multipart"}
-    if not segments[-1].startswith(b"--"):
-        return {"confidence":"unknown","reason":"incomplete_multipart"}
+    if segments[-1] not in (b"--", b"--\r\n"):
+        return {"confidence":"unknown","reason":"invalid_closing_boundary"}
+    if len(segments) > 10002:
+        return {"confidence":"unknown","reason":"part_limit_exceeded"}
     fields=Counter()
     for segment in segments[1:-1]:
-        if not segment.startswith(b"\r\n"):
+        if not segment.startswith(b"\r\n") or not segment.endswith(b"\r\n"):
             return {"confidence":"unknown","reason":"malformed_part"}
         header_end=segment.find(b"\r\n\r\n")
         if header_end<0 or header_end>8192:
             return {"confidence":"unknown","reason":"malformed_part"}
         headers=segment[2:header_end].split(b"\r\n")
+        if any(not line or b":" not in line for line in headers):
+            return {"confidence":"unknown","reason":"malformed_headers"}
         for line in headers:
             if line.lower().startswith(b"content-disposition:"):
                 disposition=line.split(b":",1)[1].strip()
