@@ -38,3 +38,18 @@ class MechanicsTests(unittest.TestCase):
         self.assertEqual(inspect_request("GET","/a.php","multipart/form-data; boundary=example",multipart([b"PHP_SESSION_UPLOAD_PROGRESS"]))["confidence"],"none")
     def test_wrong_type(self):
         self.assertEqual(inspect_request("POST","/a.php","application/json",multipart([b"PHP_SESSION_UPLOAD_PROGRESS"]))["confidence"],"none")
+
+    def test_invalid_closing_boundary_rejected(self):
+        body=multipart([b"PHP_SESSION_UPLOAD_PROGRESS"])+b"garbage"
+        self.assertEqual(
+            inspect_request("POST","/a.php","multipart/form-data; boundary=example",body)["confidence"],
+            "unknown")
+    def test_embedded_boundary_is_not_accepted_as_valid_multipart(self):
+        body=(b"--example\\r\\nContent-Disposition: form-data; name=\\\"safe\\\""
+              b"\\r\\n\\r\\ntext--examplefake\\r\\n--example--\\r\\n")
+        self.assertEqual(
+            inspect_request("POST","/a.php","multipart/form-data; boundary=example",body)["confidence"],
+            "none")
+    def test_invalid_resource_budget_rejected(self):
+        with self.assertRaises(ValueError):
+            inspect_request("POST","/a.php","multipart/form-data; boundary=example",b"", -1)
