@@ -1,0 +1,10 @@
+// Search 1: requires CIM Endpoint.Processes datamodel. Adapt index & summaries.
+| tstats count from datamodel=Endpoint.Processes where Processes.parent_process_name IN ("php-fpm*","apache2","httpd") Processes.process_name IN ("sh","bash","dash","curl","wget","nc","socat") by Processes.dest Processes.user Processes.parent_process_name Processes.process_name
+| rename Processes.* as *
+| sort - count
+
+// Search 2: run separately on PHP error logs; customize index/sourcetype.
+index=web sourcetype=php:error ("Allowed memory size of" OR "Out of memory")
+| bin _time span=5m
+| stats count by host _time
+| where count >= 3
