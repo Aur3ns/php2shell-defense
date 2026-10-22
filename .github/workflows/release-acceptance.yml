@@ -1,0 +1,96 @@
+name: Release acceptance campaign
+on: [push, pull_request, workflow_dispatch]
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+jobs:
+  portable:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install pyyaml
+      - run: python scripts/validate.py
+      - run: python -m unittest discover -s tests -p 'test_*.py' -v
+      - run: python -m tools.pipeline --events tests/pipeline/events.jsonl --labels tests/pipeline/labels.json --output pipeline-report.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: acceptance-portable-evidence
+          path: pipeline-report.json
+  suricata:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y suricata
+      - run: python tests/pcap/generate.py
+      - run: |
+          mkdir -p build/eve
+          sudo suricata -r build/pcap/synthetic-http.pcap -c /etc/suricata/suricata.yaml -S "$GITHUB_WORKSPACE/suricata/php2shell_heuristics.rules" -l build/eve --set outputs.1.eve-log.enabled=yes
+          python tests/pcap/assert_eve.py build/eve/eve.json build/pcap/expected.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: acceptance-suricata-evidence
+          path: build/eve/eve.json
+  zeek:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: python tests/pcap/generate.py
+      - run: python tests/zeek/ethernetize.py build/pcap/synthetic-http.pcap build/pcap/synthetic-ethernet.pcap
+      - run: |
+          mkdir -p build/zeek
+          docker run --rm -v "$GITHUB_WORKSPACE:/work" -w /work/build/zeek --entrypoint zeek zeek/zeek:7.0.0 -C -r /work/build/pcap/synthetic-ethernet.pcap /work/zeek/__load__.zeek
+          python tests/zeek/assert_notice.py build/zeek/notice.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: acceptance-zeek-evidence
+          path: build/zeek/notice.log
+  falco:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          docker run --rm -v "$GITHUB_WORKSPACE/falco/php_web_children.yaml:/rules/php_web_children.yaml:ro" --entrypoint falco falcosecurity/falco:0.45.0 --validate /rules/php_web_children.yaml
+  wazuh_behavior:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Start Wazuh manager
+        run: |
+          docker run -d --name wazuh-acceptance --ulimit nofile=65536:65536 -v "$GITHUB_WORKSPACE/wazuh/php2shell_rules.xml:/var/ossec/etc/rules/php2shell_rules.xml:ro" wazuh/wazuh-manager:4.12.0
+      - name: Wait for analysisd and logtest socket
+        run: |
+          ready=0
+          for i in $(seq 1 90); do
+            if docker exec wazuh-acceptance test -S /var/ossec/queue/sockets/logtest 2>/dev/null; then
+              ready=1; break
+            fi
+            sleep 2
+          done
+          docker exec wazuh-acceptance /var/ossec/bin/wazuh-analysisd -t
+          test "$ready" -eq 1
+      - name: Assert positive and benign negative cases
+        run: |
+          set -o pipefail
+          printf '%s\n' 'PHP Fatal error: Allowed memory size of 134217728 bytes exhausted' 'Routine PHP request completed normally' | timeout 45s docker exec -i wazuh-acceptance /var/ossec/bin/wazuh-logtest -q | tee wazuh-logtest.txt
+          grep -q '100511' wazuh-logtest.txt
+          test "$(grep -c '100511' wazuh-logtest.txt)" -eq 1
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: acceptance-wazuh-evidence
+          path: wazuh-logtest.txt
+          if-no-files-found: ignore
+      - name: Diagnostics
+        if: failure()
+        run: docker logs --tail 100 wazuh-acceptance || true
+      - name: Cleanup
+        if: always()
+        run: docker rm -f wazuh-acceptance || true
