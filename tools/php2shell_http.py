@@ -14,7 +14,7 @@ def inspect_request(method, path, content_type, body, max_bytes=2_000_000):
         return {"confidence":"none","reason":"not_multipart"}
     fields=re.findall(rb'(?im)Content-Disposition:[^\r\n]{0,4096}\bname="([^"\r\n]{1,512})"',body)
     counts=Counter(fields)
-    progress=b"PHP_SESSION_UPLOAD_PROGRESS" in counts
+    progress=any(key == b"PHP_SESSION_UPLOAD_PROGRESS" for key in counts)
     repeated=sum(n for key,n in counts.items() if key.endswith(b"[]") and n>1)
     if progress and repeated>=100:
         return {"confidence":"elevated","reason":"upload_progress_plus_repeated_array_fields",
