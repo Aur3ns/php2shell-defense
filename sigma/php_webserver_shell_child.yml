@@ -1,0 +1,19 @@
+title: PHP Web Server Spawns Shell Process
+id: 40c6e742-5488-493b-9f12-49973f60bce1
+status: experimental
+description: Generic child shell process of a PHP/HTTP worker; not a unique PHP2Shell indicator.
+author: PHP2Shell Defense contributors
+date: 2026-10-22
+tags: [attack.execution, attack.t1059]
+logsource:
+  category: process_creation
+  product: linux
+detection:
+  parent:
+    ParentImage|endswith: [/php-fpm, /php-fpm8.2, /php-fpm8.3, /php-fpm8.4, /php-fpm8.5, /apache2, /httpd]
+  child:
+    Image|endswith: [/sh, /bash, /dash, /zsh]
+  condition: parent and child
+falsepositives:
+  - Legitimate processes started by web applications
+level: high
