@@ -33,5 +33,11 @@ class MechanicsTests(unittest.TestCase):
     def test_wrong_content_type(self):
         body=multipart([b"PHP_SESSION_UPLOAD_PROGRESS"]+[b"items[]"]*110)
         self.assertEqual(inspect_request("POST","/index.php","application/json",body)["confidence"],"none")
+    def test_substring_in_random_data_is_not_a_header(self):
+        payload=(b"noiseContent-Disposition: form-data; name=\\\"PHP_SESSION_UPLOAD_PROGRESS\\\""
+                 +b"\\r\\n"+b"noiseContent-Disposition: form-data; name=\\\"tags[]\\\"\\r\\n"*120)
+        outcome=inspect_request("POST","/upload.php","multipart/form-data",payload)
+        self.assertEqual(outcome["confidence"],"none")
+
     def test_benign_upload(self):
         self.assertEqual(self.call([b"file",b"description"])["confidence"],"none")
