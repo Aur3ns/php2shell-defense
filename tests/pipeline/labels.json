@@ -1,0 +1,5 @@
+[
+  {"id":"case-suspicious","label":"suspicious"},
+  {"id":"case-benign-upload","label":"benign"},
+  {"id":"case-benign-worker","label":"benign"}
+]
