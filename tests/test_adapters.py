@@ -1,5 +1,6 @@
 import unittest
 from tools.adapters import normalize, normalize_many
+from tools.pipeline import run
 
 class AdaptersTest(unittest.TestCase):
     def test_suricata(self):
@@ -22,6 +23,18 @@ class AdaptersTest(unittest.TestCase):
     def test_invalid_host_rejected(self):
         r={"rule":{"id":"100511"},"timestamp":"2026-10-22T10:00:01Z"}
         with self.assertRaises(ValueError): normalize("wazuh",r)
+    def test_cross_source_correlates_only_with_explicit_asset_mapping(self):
+        suricata={"event_type":"alert","timestamp":"2026-10-22T10:00:00+00:00",
+                  "dest_ip":"192.0.2.1","alert":{"signature_id":9900101}}
+        falco={"rule":"Unexpected shell or downloader spawned by PHP worker",
+               "time":"2026-10-22T10:00:30Z","hostname":"web-demo"}
+        a=normalize_many("suricata",[suricata],{"suricata_destination_host":"web-demo"})
+        b=normalize_many("falco",[falco])
+        report=run(a+b)
+        self.assertEqual(len(report["correlations"]),1)
+        self.assertEqual(report["correlations"][0]["host"],"web-demo")
+        self.assertEqual(run(normalize_many("suricata",[suricata])+b)["correlations"],[])
+
     def test_ids_stable(self):
         r={"rule":{"id":"100511"},"agent":{"name":"web"},"timestamp":"2026-10-22T10:00:01Z"}
         self.assertEqual(normalize_many("wazuh",[r,r])[1]["id"],"wazuh-1")
