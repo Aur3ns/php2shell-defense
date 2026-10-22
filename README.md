@@ -38,6 +38,8 @@ python3 scripts/validate.py
 
 This runs **portable structural checks and four synthetic behavior fixtures**, *not* native rule-engine tests. Read [validation status](docs/validation.md) and [native engine validation](docs/native-validation.md) before deploying to any engine.
 
+**Production assessment:** Before operational rollout, use the [production go/no-go checklist](docs/production-gate.md). A passing CI does not authorize automated blocking or demonstrate CVE-specific coverage.
+
 ## Deploy safely
 
 1. Keep PHP security releases or vendor-supported backports up to date.
