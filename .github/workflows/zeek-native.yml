@@ -10,6 +10,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Generate independent synthetic HTTP PCAP
         run: python tests/pcap/generate.py
+      - name: Wrap raw-IP PCAP in Ethernet for Zeek
+        run: python tests/zeek/ethernetize.py build/pcap/synthetic-http.pcap build/pcap/synthetic-ethernet.pcap
       - name: Validate Zeek script syntax
         run: |
           docker run --rm -v "$GITHUB_WORKSPACE/zeek:/work:ro" \
@@ -19,5 +21,6 @@ jobs:
           mkdir -p build/zeek
           docker run --rm -v "$GITHUB_WORKSPACE:/work" -w /work/build/zeek \
             --entrypoint zeek zeek/zeek:7.0.0 \
-            -C -r /work/build/pcap/synthetic-http.pcap /work/zeek/__load__.zeek
+            -C -r /work/build/pcap/synthetic-ethernet.pcap /work/zeek/__load__.zeek
+          ls -lah build/zeek
           python tests/zeek/assert_notice.py build/zeek/notice.log
