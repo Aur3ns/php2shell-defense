@@ -1,0 +1,9 @@
+- rule: Unexpected shell or downloader spawned by PHP worker
+  desc: Generic web post-exploitation signal
+  condition: >
+    spawned_process and
+    proc.pname in (php-fpm, php-fpm8.2, php-fpm8.3, php-fpm8.4, php-fpm8.5, apache2, httpd, lshttpd) and
+    proc.name in (sh, bash, dash, zsh, curl, wget, nc, ncat, socat)
+  output: "Suspicious web worker child (user=%user.name parent=%proc.pname child=%proc.name cmdline=%proc.cmdline)"
+  priority: WARNING
+  tags: [php, web, execution, experimental]
