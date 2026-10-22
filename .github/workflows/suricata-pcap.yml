@@ -1,0 +1,22 @@
+name: Suricata PCAP behavioral regression
+on: [push, pull_request]
+jobs:
+  replay:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Suricata
+        run: |
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y suricata
+      - name: Generate synthetic TCP traffic
+        run: python3 tests/pcap/generate.py --output build/pcap
+      - name: Replay PCAP offline
+        run: |
+          mkdir -p build/eve
+          sudo suricata -r build/pcap/synthetic-http.pcap \
+            -c /etc/suricata/suricata.yaml \
+            -S "$GITHUB_WORKSPACE/suricata/php2shell_heuristics.rules" \
+            -l build/eve --set outputs.1.eve-log.enabled=yes
+      - name: Check expected alerts
+        run: python3 tests/pcap/assert_eve.py build/eve/eve.json build/pcap/expected.json
