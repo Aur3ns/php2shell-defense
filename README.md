@@ -3,6 +3,7 @@
 **Open-source, multi-platform detection engineering starter pack for PHP2Shell and related PHP web-server post-exploitation behaviors.**
 
 [![Validate](https://github.com/Aur3ns/php2shell-defense/actions/workflows/validate.yml/badge.svg)](https://github.com/Aur3ns/php2shell-defense/actions/workflows/validate.yml)
+[![Suricata native validation](https://github.com/Aur3ns/php2shell-defense/actions/workflows/suricata-native.yml/badge.svg)](https://github.com/Aur3ns/php2shell-defense/actions/workflows/suricata-native.yml)
 ![Status](https://img.shields.io/badge/status-experimental-orange)
 ![License](https://img.shields.io/badge/license-Apache--2.0-blue)
 
@@ -35,7 +36,7 @@ python3 -m pip install pyyaml
 python3 scripts/validate.py
 ```
 
-This runs **portable structural checks and four synthetic behavior fixtures**, *not* native rule-engine tests. Read [validation status](docs/validation.md) before deploying to any engine.
+This runs **portable structural checks and four synthetic behavior fixtures**, *not* native rule-engine tests. Read [validation status](docs/validation.md) and [native engine validation](docs/native-validation.md) before deploying to any engine.
 
 ## Deploy safely
 
