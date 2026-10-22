@@ -1,0 +1,22 @@
+name: Native engine validation
+description: Share a reproducible parser or runtime validation result.
+title: "[ENGINE] "
+body:
+  - type: input
+    id: engine
+    attributes:
+      label: Engine and exact version
+    validations:
+      required: true
+  - type: textarea
+    id: cmd
+    attributes:
+      label: Validation command or steps
+    validations:
+      required: true
+  - type: textarea
+    id: result
+    attributes:
+      label: Sanitized output, warnings and errors
+    validations:
+      required: true
