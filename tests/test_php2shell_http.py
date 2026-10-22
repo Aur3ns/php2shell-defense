@@ -19,5 +19,19 @@ class MechanicsTests(unittest.TestCase):
     def test_max_bytes(self):
         result=inspect_request("POST","/upload.php","multipart/form-data",b"x"*100,10)
         self.assertEqual(result["confidence"],"unknown")
+    def test_near_threshold_not_elevated(self):
+        fields=[b"PHP_SESSION_UPLOAD_PROGRESS"]+[b"items[]"]*99
+        self.assertEqual(self.call(fields)["confidence"],"context")
+    def test_query_suffix(self):
+        fields=[b"PHP_SESSION_UPLOAD_PROGRESS"]+[b"items[]"]*100
+        self.assertEqual(self.call(fields,path="/index.php?view=1")["confidence"],"elevated")
+    def test_benign_repeated_array(self):
+        self.assertEqual(self.call([b"tags[]"]*120)["confidence"],"none")
+    def test_wrong_http_method(self):
+        body=multipart([b"PHP_SESSION_UPLOAD_PROGRESS"]+[b"items[]"]*110)
+        self.assertEqual(inspect_request("GET","/index.php","multipart/form-data",body)["confidence"],"none")
+    def test_wrong_content_type(self):
+        body=multipart([b"PHP_SESSION_UPLOAD_PROGRESS"]+[b"items[]"]*110)
+        self.assertEqual(inspect_request("POST","/index.php","application/json",body)["confidence"],"none")
     def test_benign_upload(self):
         self.assertEqual(self.call([b"file",b"description"])["confidence"],"none")
