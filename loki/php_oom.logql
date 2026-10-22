@@ -1,0 +1,1 @@
+sum by (instance) (count_over_time({job="php-errors"} |~ "(?i)(allowed memory size of|out of memory)" [5m])) > 3
