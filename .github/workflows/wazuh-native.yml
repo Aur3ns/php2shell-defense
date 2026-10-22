@@ -5,9 +5,25 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - name: Validate rules using Wazuh manager container
+      - name: Start Wazuh with its normal initialization
         run: |
-          docker run --rm --entrypoint bash \
+          docker run -d --name wazuh-validation \
             -v "$GITHUB_WORKSPACE/wazuh/php2shell_rules.xml:/var/ossec/etc/rules/php2shell_rules.xml:ro" \
-            wazuh/wazuh-manager:4.12.0 -lc \
-            '/var/ossec/bin/wazuh-analysisd -t'
+            wazuh/wazuh-manager:4.12.0
+      - name: Wait for Wazuh initialization and validate rule configuration
+        run: |
+          for i in $(seq 1 30); do
+            if docker exec wazuh-validation test -f /var/ossec/etc/internal_options.conf; then
+              docker exec wazuh-validation /var/ossec/bin/wazuh-analysisd -t
+              exit $?
+            fi
+            sleep 2
+          done
+          docker logs wazuh-validation
+          exit 1
+      - name: Show container logs if failed
+        if: failure()
+        run: docker logs wazuh-validation || true
+      - name: Cleanup
+        if: always()
+        run: docker rm -f wazuh-validation || true
