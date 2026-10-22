@@ -1,0 +1,4 @@
+{"id":"a1","host":"case-suspicious","timestamp":"2026-10-22T10:00:00Z","kind":"http_anomaly"}
+{"id":"a2","host":"case-suspicious","timestamp":"2026-10-22T10:00:40Z","kind":"web_child_process"}
+{"id":"b1","host":"case-benign-upload","timestamp":"2026-10-22T10:01:00Z","kind":"http_anomaly"}
+{"id":"c1","host":"case-benign-worker","timestamp":"2026-10-22T11:00:00Z","kind":"web_child_process"}
