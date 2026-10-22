@@ -25,3 +25,16 @@ jobs:
         with:
           name: synthetic-pipeline-report
           path: pipeline-report.json
+
+      - name: Normalize native-style security events
+        run: |
+          python -m tools.ingest --source suricata --input tests/adapters/suricata.jsonl --output suricata.normalized.jsonl --suricata-destination-host web-demo
+          python -m tools.ingest --source falco --input tests/adapters/falco.jsonl --output falco.normalized.jsonl
+          python -m tools.ingest --source wazuh --input tests/adapters/wazuh.jsonl --output wazuh.normalized.jsonl
+          cat suricata.normalized.jsonl falco.normalized.jsonl wazuh.normalized.jsonl > multi-engine.jsonl
+          python -c "from pathlib import Path; from tools.pipeline import run; import json; rows=[json.loads(x) for x in Path('multi-engine.jsonl').read_text().splitlines()]; result=run(rows); assert result['correlations'] and result['correlations'][0]['host']=='web-demo'; Path('multi-engine-report.json').write_text(json.dumps(result, indent=2))"
+      - name: Archive multi-engine example
+        uses: actions/upload-artifact@v4
+        with:
+          name: synthetic-multi-engine-report
+          path: multi-engine-report.json
