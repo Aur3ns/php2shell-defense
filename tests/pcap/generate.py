@@ -36,7 +36,7 @@ def make(dest):
       ("large_php_report","/report.php",450000,True),
     ]
     for i,(name,path,declared,hit) in enumerate(cases):
-        src=f"198.51.100.{10+i}";dst="192.0.2.10"; sport=20000+i
+        src=f"198.51.100.{10+i}";dst="192.168.1.10"; sport=20000+i
         body=b"x"*declared
         request=(f"POST {path} HTTP/1.1\r\nHost: demo.invalid\r\nContent-Length: {declared}\r\nContent-Type: application/octet-stream\r\nConnection: close\r\n\r\n").encode()+body
         # 3-way handshake; chunk payload into valid TCP segments to ensure reassembly.
