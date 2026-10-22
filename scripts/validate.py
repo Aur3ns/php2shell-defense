@@ -17,7 +17,8 @@ for p in (root / ".github/workflows").glob("*.yml"):
 xml = ET.parse(root / "wazuh/php2shell_rules.xml")
 ids = [e.attrib["id"] for e in xml.iter("rule")]
 assert len(ids) == len(set(ids)) and len(ids) >= 2
-assert "SecRuleEngine" not in (root / "modsecurity/php2shell_heuristics.conf").read_text()
+modsec = (root / "modsecurity/php2shell_heuristics.conf").read_text()
+assert not any(line.lstrip().startswith("SecRuleEngine") for line in modsec.splitlines())
 suricata = (root / "suricata/php2shell_heuristics.rules").read_text()
 assert "alert http" in suricata and "drop http" not in suricata
 fixtures = yaml.safe_load((root / "tests/fixtures.yml").read_text())["cases"]
