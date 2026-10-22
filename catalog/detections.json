@@ -1,0 +1,99 @@
+{
+  "schema_version": 1,
+  "updated": "2026-10-22",
+  "disclaimer": "Experimental heuristics; none establishes exploitation by itself.",
+  "detections": [
+    {
+      "id": "web-child-shell",
+      "platforms": [
+        "sigma",
+        "elastic",
+        "falco",
+        "splunk"
+      ],
+      "confidence": "medium",
+      "telemetry": [
+        "linux.process_creation",
+        "parent_image",
+        "image"
+      ],
+      "finding": "Unexpected shell process spawned by web worker",
+      "false_positives": [
+        "legitimate app subprocess"
+      ],
+      "native_tested": false
+    },
+    {
+      "id": "web-child-download",
+      "platforms": [
+        "sigma",
+        "falco",
+        "splunk"
+      ],
+      "confidence": "medium",
+      "telemetry": [
+        "linux.process_creation",
+        "parent_image",
+        "image"
+      ],
+      "finding": "Web worker launches network utility",
+      "false_positives": [
+        "legitimate file retrieval"
+      ],
+      "native_tested": false
+    },
+    {
+      "id": "web-temp-execution",
+      "platforms": [
+        "sigma"
+      ],
+      "confidence": "medium",
+      "telemetry": [
+        "linux.process_creation",
+        "parent_image",
+        "image"
+      ],
+      "finding": "Web worker executes temporary file",
+      "false_positives": [
+        "temporary worker scripts"
+      ],
+      "native_tested": false
+    },
+    {
+      "id": "large-php-post",
+      "platforms": [
+        "suricata",
+        "modsecurity"
+      ],
+      "confidence": "low",
+      "telemetry": [
+        "decrypted_http",
+        "request_path",
+        "request_content_length"
+      ],
+      "finding": "Large POST request to PHP path",
+      "false_positives": [
+        "normal file uploads",
+        "API payloads"
+      ],
+      "native_tested": false
+    },
+    {
+      "id": "php-memory-pressure",
+      "platforms": [
+        "wazuh",
+        "splunk",
+        "loki"
+      ],
+      "confidence": "low",
+      "telemetry": [
+        "php.error_log"
+      ],
+      "finding": "PHP memory exhaustion",
+      "false_positives": [
+        "legitimate memory pressure"
+      ],
+      "native_tested": false
+    }
+  ]
+}
