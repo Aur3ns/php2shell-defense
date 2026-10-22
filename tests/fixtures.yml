@@ -1,0 +1,17 @@
+cases:
+  - name: suspicious_shell
+    parent: /usr/sbin/php-fpm8.4
+    child: /bin/sh
+    expected_behavior_alert: true
+  - name: normal_child
+    parent: /usr/sbin/php-fpm8.4
+    child: /usr/bin/convert
+    expected_behavior_alert: false
+  - name: normal_admin
+    parent: /usr/sbin/sshd
+    child: /bin/bash
+    expected_behavior_alert: false
+  - name: suspicious_curl
+    parent: /usr/sbin/apache2
+    child: /usr/bin/curl
+    expected_behavior_alert: true
