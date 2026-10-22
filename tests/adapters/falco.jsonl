@@ -1,0 +1,2 @@
+{"rule":"Unexpected shell or downloader spawned by PHP worker","time":"2026-10-22T10:00:35Z","hostname":"web-demo"}
+{"rule":"Other rule","time":"2026-10-22T10:00:36Z","hostname":"web-demo"}
