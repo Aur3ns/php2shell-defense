@@ -1,0 +1,29 @@
+name: False positive / rule tuning
+description: Report benign traffic or activity triggering a detection.
+title: "[FP] "
+labels: ["false-positive"]
+body:
+  - type: input
+    id: rule
+    attributes:
+      label: Rule path and engine
+      placeholder: sigma/php_webserver_shell_child.yml / Sigma backend...
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Engine version
+    validations:
+      required: true
+  - type: textarea
+    id: benign
+    attributes:
+      label: Benign activity and sanitized event
+      description: Remove credentials, organization identifiers and personal information.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior and proposed tuning
