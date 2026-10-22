@@ -79,9 +79,11 @@ jobs:
       - name: Assert positive and benign negative cases
         run: |
           set -o pipefail
-          printf '%s\n' 'PHP Fatal error: Allowed memory size of 134217728 bytes exhausted' 'Routine PHP request completed normally' | timeout 45s docker exec -i wazuh-acceptance /var/ossec/bin/wazuh-logtest -q | tee wazuh-logtest.txt
-          grep -q '100511' wazuh-logtest.txt
-          test "$(grep -c '100511' wazuh-logtest.txt)" -eq 1
+          printf '%s\\n' 'PHP Fatal error: Allowed memory size of 134217728 bytes exhausted' | timeout 45s docker exec -i wazuh-acceptance /var/ossec/bin/wazuh-logtest | tee wazuh-positive.txt
+          grep -Eq "id: '?100511'?" wazuh-positive.txt
+          printf '%s\\n' 'Routine PHP request completed normally' | timeout 45s docker exec -i wazuh-acceptance /var/ossec/bin/wazuh-logtest | tee wazuh-negative.txt
+          if grep -Eq "id: '?100511'?" wazuh-negative.txt; then echo 'False positive on benign fixture'; exit 1; fi
+          cat wazuh-positive.txt wazuh-negative.txt > wazuh-logtest.txt
       - uses: actions/upload-artifact@v4
         if: always()
         with:
