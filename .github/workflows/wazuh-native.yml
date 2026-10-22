@@ -21,6 +21,14 @@ jobs:
           done
           docker logs wazuh-validation
           exit 1
+      - name: Exercise PHP memory heuristic through Wazuh logtest
+        run: |
+          set -o pipefail
+          # Logtest uses the manager's decoder and ruleset, unlike XML validation.
+          printf '%s\n' 'PHP Fatal error: Allowed memory size of 134217728 bytes exhausted' |
+            timeout 45s docker exec -i wazuh-validation /var/ossec/bin/wazuh-logtest -q |
+            tee wazuh-logtest.txt
+          grep -q '100511' wazuh-logtest.txt
       - name: Show container logs if failed
         if: failure()
         run: docker logs wazuh-validation || true
