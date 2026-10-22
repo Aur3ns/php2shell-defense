@@ -1,14 +1,23 @@
-name: Zeek native syntax validation
+name: Zeek native syntax and PCAP behavior
 on: [push, pull_request]
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 jobs:
-  syntax:
+  syntax-and-pcap:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - name: Validate Zeek rules with Zeek container
+      - name: Generate independent synthetic HTTP PCAP
+        run: python tests/pcap/generate.py
+      - name: Validate Zeek script syntax
         run: |
           docker run --rm -v "$GITHUB_WORKSPACE/zeek:/work:ro" \
             --entrypoint zeek zeek/zeek:7.0.0 -C -a /work/__load__.zeek
+      - name: Replay PCAP with Zeek and assert notices
+        run: |
+          mkdir -p build/zeek
+          docker run --rm -v "$GITHUB_WORKSPACE:/work" -w /work/build/zeek \
+            --entrypoint zeek zeek/zeek:7.0.0 \
+            -C -r /work/build/pcap/synthetic-http.pcap /work/zeek/__load__.zeek
+          python tests/zeek/assert_notice.py build/zeek/notice.log
