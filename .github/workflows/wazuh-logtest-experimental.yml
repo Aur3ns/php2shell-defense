@@ -1,0 +1,40 @@
+name: Wazuh logtest experimental
+on:
+  workflow_dispatch:
+jobs:
+  logtest:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Launch Wazuh manager and wait for logtest service
+        run: |
+          docker run -d --name wazuh-test --ulimit nofile=65536:65536 \
+            -v "$GITHUB_WORKSPACE/wazuh/php2shell_rules.xml:/var/ossec/etc/rules/php2shell_rules.xml:ro" \
+            wazuh/wazuh-manager:4.12.0
+          ready=0
+          for i in $(seq 1 90); do
+            if docker exec wazuh-test test -S /var/ossec/queue/sockets/logtest 2>/dev/null; then
+              ready=1
+              break
+            fi
+            sleep 2
+          done
+          if [ "$ready" -ne 1 ]; then
+            docker logs --tail 100 wazuh-test
+            echo "Wazuh logtest service unavailable"
+            exit 1
+          fi
+      - name: Behavioral rule assertion
+        run: |
+          set -o pipefail
+          printf '%s\n' 'PHP Fatal error: Allowed memory size of 134217728 bytes exhausted' |
+            timeout 45s docker exec -i wazuh-test /var/ossec/bin/wazuh-logtest -q |
+            tee wazuh-logtest.txt
+          grep -q '100511' wazuh-logtest.txt
+      - name: Logs on failure
+        if: failure()
+        run: docker logs --tail 100 wazuh-test || true
+      - name: Cleanup
+        if: always()
+        run: docker rm -f wazuh-test || true
