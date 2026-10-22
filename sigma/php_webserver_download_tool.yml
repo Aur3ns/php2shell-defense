@@ -1,0 +1,19 @@
+title: PHP Web Server Launches Download Tool
+id: 551e2767-38c2-4010-a305-fcf6476fa0d3
+status: experimental
+description: Generic web server post-exploitation signal.
+author: PHP2Shell Defense contributors
+date: 2026-10-22
+tags: [attack.command-and-control, attack.t1105]
+logsource:
+  category: process_creation
+  product: linux
+detection:
+  parent:
+    ParentImage|endswith: [/php-fpm, /php-fpm8.2, /php-fpm8.3, /php-fpm8.4, /php-fpm8.5, /apache2, /httpd]
+  child:
+    Image|endswith: [/curl, /wget, /nc, /ncat, /socat]
+  condition: parent and child
+falsepositives:
+  - Legitimate web-app downloads
+level: high
