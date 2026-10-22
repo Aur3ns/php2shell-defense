@@ -49,7 +49,7 @@ class MechanicsTests(unittest.TestCase):
               b"\\r\\n\\r\\ntext--examplefake\\r\\n--example--\\r\\n")
         self.assertEqual(
             inspect_request("POST","/a.php","multipart/form-data; boundary=example",body)["confidence"],
-            "none")
+            "unknown")
     def test_invalid_resource_budget_rejected(self):
         with self.assertRaises(ValueError):
             inspect_request("POST","/a.php","multipart/form-data; boundary=example",b"", -1)
