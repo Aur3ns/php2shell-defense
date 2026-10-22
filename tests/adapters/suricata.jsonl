@@ -1,0 +1,2 @@
+{"event_type":"alert","timestamp":"2026-10-22T10:00:00.000000+0000","dest_ip":"192.168.1.10","src_ip":"198.51.100.11","alert":{"signature_id":9900101}}
+{"event_type":"alert","timestamp":"2026-10-22T10:00:02+00:00","dest_ip":"192.168.1.10","alert":{"signature_id":11111}}
