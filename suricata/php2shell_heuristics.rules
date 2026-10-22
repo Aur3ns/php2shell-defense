@@ -1,0 +1,3 @@
+# Experimental only: large PHP POSTs are common for legitimate uploads.
+# Alert only; never blindly change to drop.
+alert http $EXTERNAL_NET any -> $HOME_NET $HTTP_PORTS (msg:"LOCAL EXPERIMENTAL large POST toward PHP path"; flow:established,to_server; http.method; content:"POST"; http.uri; pcre:"/\.php(?:\?|$)/i"; http.header; pcre:"/Content-Length\s*:\s*(?:[3-9][0-9]{5}|[1-9][0-9]{6,})\b/i"; classtype:attempted-admin; sid:9900101; rev:2;)
