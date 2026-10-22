@@ -1,0 +1,16 @@
+name: Suricata native validation
+on: [push, pull_request]
+jobs:
+  syntax:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Suricata from Ubuntu repository
+        run: |
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y suricata
+      - name: Print engine version
+        run: suricata -V
+      - name: Native rule syntax check
+        run: |
+          sudo suricata -T -c /etc/suricata/suricata.yaml -S "$GITHUB_WORKSPACE/suricata/php2shell_heuristics.rules"
