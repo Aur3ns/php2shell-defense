@@ -1,0 +1,11 @@
+name: Zeek native syntax validation
+on: [push, pull_request]
+jobs:
+  syntax:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate Zeek rules with Zeek container
+        run: |
+          docker run --rm -v "$GITHUB_WORKSPACE/zeek:/work:ro" \
+            --entrypoint zeek zeek/zeek:7.0.0 -C -a /work/__load__.zeek
