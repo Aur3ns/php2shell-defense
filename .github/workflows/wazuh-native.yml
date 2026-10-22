@@ -7,7 +7,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Start Wazuh with its normal initialization
         run: |
-          docker run -d --name wazuh-validation \
+          docker run -d --name wazuh-validation --ulimit nofile=65536:65536 \
             -v "$GITHUB_WORKSPACE/wazuh/php2shell_rules.xml:/var/ossec/etc/rules/php2shell_rules.xml:ro" \
             wazuh/wazuh-manager:4.12.0
       - name: Wait for Wazuh initialization and validate rule configuration
@@ -22,8 +22,13 @@ jobs:
           docker logs wazuh-validation
           exit 1
       - name: Exercise PHP memory heuristic through Wazuh logtest
+        # The manager must have started analysisd before logtest can connect.
         run: |
           set -o pipefail
+          for i in $(seq 1 40); do
+            if docker exec wazuh-validation test -S /var/ossec/queue/sockets/logtest 2>/dev/null; then break; fi
+            sleep 2
+          done
           # Logtest uses the manager's decoder and ruleset, unlike XML validation.
           printf '%s\n' 'PHP Fatal error: Allowed memory size of 134217728 bytes exhausted' |
             timeout 45s docker exec -i wazuh-validation /var/ossec/bin/wazuh-logtest -q |
