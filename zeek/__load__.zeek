@@ -14,7 +14,7 @@ event http_request(c: connection, method: string, original_URI: string,
                    unescaped_URI: string, version: string)
     {
     candidate[c$uid] = method == "POST" &&
-        /\\.php([?]|$)/ in to_lower(original_URI);
+        /\.php([?]|$)/ in to_lower(original_URI);
     }
 
 event http_header(c: connection, is_orig: bool, name: string, value: string)
