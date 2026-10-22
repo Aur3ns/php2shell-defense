@@ -1,0 +1,7 @@
+[
+  {"id":"benign-upload", "label":"benign"},
+  {"id":"routine-report", "label":"benign"},
+  {"id":"web-shell-child", "label":"suspicious"},
+  {"id":"web-download-child", "label":"suspicious"},
+  {"id":"ordinary-form", "label":"benign"}
+]
