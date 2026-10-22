@@ -3,7 +3,7 @@
 A reproducible **synthetic demonstration**, not a PHP2Shell exploitation test.
 
 ```bash
-python3 tools/pipeline.py --events tests/pipeline/events.jsonl --labels tests/pipeline/labels.json --output report.json
+python3 -m tools.pipeline --events tests/pipeline/events.jsonl --labels tests/pipeline/labels.json --output report.json
 ```
 
 Input JSONL events require unique `id`, a `host`, an offset-aware `timestamp`, and `kind` from `http_anomaly`, `php_memory_error`, and `web_child_process`. Events are sorted within each host, correlated in a bounded time window, and evaluated against independently labeled test hosts.
