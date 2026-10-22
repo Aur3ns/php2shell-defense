@@ -1,0 +1,2 @@
+{"host":"web-1","timestamp":"2026-10-22T10:00:00Z","kind":"http_anomaly"}
+{"host":"web-1","timestamp":"2026-10-22T10:00:30Z","kind":"web_child_process"}
