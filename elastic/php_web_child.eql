@@ -1,0 +1,3 @@
+process where host.os.type == "linux" and event.type == "start" and
+  process.parent.name in ("php-fpm", "php-fpm8.2", "php-fpm8.3", "php-fpm8.4", "php-fpm8.5", "apache2", "httpd", "lshttpd") and
+  process.name in ("sh", "bash", "dash", "zsh", "curl", "wget", "nc", "ncat", "socat")
